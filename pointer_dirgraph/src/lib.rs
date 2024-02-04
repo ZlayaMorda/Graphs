@@ -1,5 +1,7 @@
-mod node;
-mod edge;
+pub mod node;
+pub mod edge;
+pub mod graph;
+mod errors;
 
 pub fn add(left: usize, right: usize) -> usize {
     left + right
