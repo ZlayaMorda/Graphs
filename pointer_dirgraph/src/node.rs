@@ -48,9 +48,9 @@ impl<'a, H: Hash + Eq, NodeData: Display, EdgeData: Display> NodeBuilder<'a, H, 
 
 #[derive(Debug)]
 pub struct Node <'a, H: Hash + Eq, NodeData: Display, EdgeData: Display> {
-    data: Option<NodeData>,
-    outbound_edges: Vec<Rc<RefCell<Edge<'a, H, EdgeData>>>>,
-    inbound_edges: Vec<Weak<RefCell<Edge<'a, H, EdgeData>>>>,
+    pub(crate) data: Option<NodeData>,
+    pub(crate) outbound_edges: Vec<Rc<RefCell<Edge<'a, H, EdgeData>>>>,
+    pub(crate) inbound_edges: Vec<Weak<RefCell<Edge<'a, H, EdgeData>>>>,
 }
 
 impl<'a, H: Hash + Eq, NodeData: Display, EdgeData: Display> fmt::Display for Node<'a, H, NodeData, EdgeData> {
