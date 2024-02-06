@@ -6,14 +6,21 @@ use std::hash::Hash;
 use std::rc::{Rc, Weak};
 use crate::edge::Edge;
 
-pub struct NodeBuilder <'a, H: Hash + Eq + Display, NodeData: Display + Clone, EdgeData: Display + Clone> {
+pub struct NodeBuilder <'a, H, NodeData, EdgeData> where
+    H: Hash + Eq + Display,
+    NodeData: Display + Clone,
+    EdgeData: Display + Clone
+{
     index: &'a H,
     data: Option<NodeData>,
     outbound_edges: HashMap<&'a H, Rc<RefCell<Edge<'a, H, EdgeData>>>>,
     inbound_edges: HashMap<&'a H, Weak<RefCell<Edge<'a, H, EdgeData>>>>,
 }
 
-impl<'a, H: Hash + Eq + Display, NodeData: Display + Clone, EdgeData: Display + Clone> NodeBuilder<'a, H, NodeData, EdgeData> {
+impl<'a, H, NodeData, EdgeData> NodeBuilder<'a, H, NodeData, EdgeData> where
+    H: Hash + Eq + Display,
+    NodeData: Display + Clone,
+    EdgeData: Display + Clone {
 
     pub fn new(index: &'a H) -> NodeBuilder<'a, H, NodeData, EdgeData> {
         NodeBuilder {
@@ -50,14 +57,22 @@ impl<'a, H: Hash + Eq + Display, NodeData: Display + Clone, EdgeData: Display + 
 }
 
 #[derive(Debug)]
-pub struct Node <'a, H: Hash + Eq + Display, NodeData: Display + Clone, EdgeData: Display + Clone> {
+pub struct Node <'a, H, NodeData, EdgeData> where
+    H: Hash + Eq + Display,
+    NodeData: Display + Clone,
+    EdgeData: Display + Clone
+{
     pub(crate) index: &'a H,
     pub(crate) data: Option<NodeData>,
     pub(crate) outbound_edges: HashMap<&'a H, Rc<RefCell<Edge<'a, H, EdgeData>>>>,
     pub(crate) inbound_edges: HashMap<&'a H, Weak<RefCell<Edge<'a, H, EdgeData>>>>,
 }
 
-impl<'a, H: Hash + Eq + Display, NodeData: Display + Clone, EdgeData: Display + Clone> fmt::Display for Node<'a, H, NodeData, EdgeData> {
+impl<'a, H, NodeData, EdgeData> Display for Node<'a, H, NodeData, EdgeData> where
+    H: Hash + Eq + Display,
+    NodeData: Display + Clone,
+    EdgeData: Display + Clone {
+
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match &self.data {
             Some(data) => { write!(f, "index: {}, data: {}", &self.index, data) }
