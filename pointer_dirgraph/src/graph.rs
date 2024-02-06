@@ -1,11 +1,11 @@
 use std::cell::RefCell;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fmt::Display;
 use std::hash::Hash;
 use std::rc::{Rc, Weak};
 use crate::edge::Edge;
 use crate::errors::GraphError;
-use crate::errors::GraphError::{EdgeExist, EdgeNotExist, NodeNotExist, OccupiedError};
+use crate::errors::GraphError::{EdgeExist, EdgeNotExist, NodeNotExist, NotEqualIndexes, OccupiedError};
 use crate::node::Node;
 
 #[derive(Default, Debug)]
@@ -15,14 +15,16 @@ pub struct Graph<'a, H: Hash + Eq + Display, NodeData: Display + Clone, EdgeData
 
 impl <'a, H: Hash + Eq + Display, NodeData: Display + Clone, EdgeData: Display + Clone> Graph<'a, H, NodeData, EdgeData> {
 
-    pub fn add_node(&mut self, key: H, node: Node<'a, H, NodeData, EdgeData>) -> Result<(), GraphError> {
-        if self.nodes.get(&key).is_some(){
+    pub fn add_node(&mut self, index: H, node: Node<'a, H, NodeData, EdgeData>) -> Result<(), GraphError> {
+        if self.nodes.get(&index).is_some() {
             Err(OccupiedError())
-        } else {
-            match self.nodes.insert(key, node) {
+        } else if index.eq(node.index){
+            match self.nodes.insert(index, node) {
                 None => Ok(()),
                 _ => panic!("Changed value, while exists key")
             }
+        } else {
+            Err(NotEqualIndexes())
         }
     }
 
@@ -38,11 +40,11 @@ impl <'a, H: Hash + Eq + Display, NodeData: Display + Clone, EdgeData: Display +
                 let weak_edge : Weak<RefCell<Edge<H, EdgeData>>> = Rc::downgrade(&new_edge);
                 let outbound_node: &mut Node<H, NodeData, EdgeData> = self.nodes.get_mut(outbound)
                     .expect("node does not exist"); // checked if node exists
-                outbound_node.outbound_edges.insert(outbound, new_edge);
+                outbound_node.outbound_edges.insert(inbound, new_edge);
 
                 let inbound_node: &mut Node<H, NodeData, EdgeData> = self.nodes.get_mut(inbound)
                     .expect("node does not exist");
-                inbound_node.inbound_edges.insert(inbound, weak_edge);
+                inbound_node.inbound_edges.insert(outbound, weak_edge);
                 Ok(())
             }
             Err(error) => { Err(error) }
@@ -71,20 +73,41 @@ impl <'a, H: Hash + Eq + Display, NodeData: Display + Clone, EdgeData: Display +
         }
     }
 
-    pub fn not_contain_edge_and_nodes(&self, outbound: &H, inbound: &H) -> Result<(), GraphError> {
+    fn not_contain_edge_and_nodes(&self, outbound: &H, inbound: &H) -> Result<(), GraphError> {
         match self.nodes.get(outbound) {
             Some(outbound_node) => {
-                match self.nodes.get(inbound) {
-                    Some(_) => {
-                        if outbound_node.outbound_edges.contains_key(outbound) {
+                match self.nodes.contains_key(inbound) {
+                    true => {
+                        if outbound_node.outbound_edges.contains_key(inbound) {
                             return Err(EdgeExist())
                         }
                         Ok(())
-                    },
-                    None => Err(NodeNotExist())
+                    }
+                    false => Err(NodeNotExist())
                 }
             },
             None => Err(NodeNotExist())
+        }
+    }
+
+    pub fn bfs(&self, s: &'a H) {
+        let mut visited: HashSet<&H> = HashSet::new();
+        self.recurs_bfs(s, &mut visited);
+    }
+
+    fn recurs_bfs(&self, s: &'a H, visited: &mut HashSet<&'a H>) {
+        if !visited.contains(s) {
+            visited.insert(s);
+            if let Some(node) = self.nodes.get(s) {
+                println!("Node: {}", node);
+                print!("Adjacent inbound:");
+                node.inbound_edges.iter().for_each(|edge| print!(" {},", edge.0));
+                println!();
+                print!("Adjacent outbound:");
+                node.outbound_edges.iter().for_each(|edge| print!(" {},", edge.0));
+                println!();
+                node.outbound_edges.iter().for_each(|edge| self.recurs_bfs(edge.0, visited));
+            }
         }
     }
 }

@@ -10,4 +10,6 @@ pub enum GraphError {
     EdgeExist(),
     #[error("Edge between such nodes does not exist")]
     EdgeNotExist(),
+    #[error("Not equal indexes")]
+    NotEqualIndexes(),
 }

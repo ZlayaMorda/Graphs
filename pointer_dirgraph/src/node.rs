@@ -60,8 +60,8 @@ pub struct Node <'a, H: Hash + Eq + Display, NodeData: Display + Clone, EdgeData
 impl<'a, H: Hash + Eq + Display, NodeData: Display + Clone, EdgeData: Display + Clone> fmt::Display for Node<'a, H, NodeData, EdgeData> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match &self.data {
-            Some(data) => {write!(f, "{}", data)}
-            None => {write!(f, "None")}
+            Some(data) => { write!(f, "index: {}, data: {}", &self.index, data) }
+            None => { write!(f, "index: {}, data: None", &self.index) }
         }
     }
 }
