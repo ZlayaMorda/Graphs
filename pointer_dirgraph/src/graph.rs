@@ -42,10 +42,11 @@ impl <'a, H, NodeData, EdgeData> Graph<'a, H, NodeData, EdgeData> where
         self.nodes.get(&key)
     }
 
-    pub fn add_edge(&mut self, edge_data: EdgeData, outbound: &'a H, inbound: &'a H) -> Result<(), GraphError> {
-        let new_edge : Edge<H, EdgeData> = Edge::new(edge_data, outbound, inbound);
+    pub fn add_edge(&mut self, new_edge: Edge<'a, H, EdgeData>) -> Result<(), GraphError> {
         match self.contain_nodes_and_not_edge(new_edge.node_out, new_edge.node_in) {
             Ok(_) => {
+                let outbound: &H = new_edge.node_out;
+                let inbound: &H = new_edge.node_in;
                 let new_edge : Rc<RefCell<Edge<H, EdgeData>>> = Rc::new(RefCell::new(new_edge));
                 let weak_edge : Weak<RefCell<Edge<H, EdgeData>>> = Rc::downgrade(&new_edge);
                 let outbound_node: &mut Node<H, NodeData, EdgeData> = self.nodes.get_mut(outbound)
