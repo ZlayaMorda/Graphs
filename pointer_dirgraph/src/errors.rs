@@ -12,6 +12,6 @@ pub enum GraphError {
     EdgeNotExist(),
     #[error("Not equal indexes")]
     NotEqualIndexes(),
-    #[error("Could not write to file: {0}")]
-    SerializerWriteError(std::io::Error),
+    #[error("Serialization error: {0}")]
+    DftError(#[from] std::io::Error)
 }

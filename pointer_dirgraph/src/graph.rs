@@ -8,7 +8,7 @@ use std::rc::{Rc, Weak};
 use crate::dft::serializer::DftSerializer;
 use crate::edge::Edge;
 use crate::errors::GraphError;
-use crate::errors::GraphError::{EdgeExist, EdgeNotExist, NodeNotExist, NotEqualIndexes, OccupiedError, SerializerWriteError};
+use crate::errors::GraphError::{EdgeExist, EdgeNotExist, NodeNotExist, NotEqualIndexes, OccupiedError};
 use crate::node::{Node};
 
 #[derive(Default, Debug)]
@@ -101,12 +101,12 @@ impl <'a, H, NodeData, EdgeData> Graph<'a, H, NodeData, EdgeData> where
         }
     }
 
-    pub fn bfs(&self, s: &'a H) {
+    pub fn dfs(&self, s: &'a H) {
         let mut visited: HashSet<&H> = HashSet::new();
-        self.recurs_bfs(s, &mut visited);
+        self.recurs_dfs(s, &mut visited);
     }
 
-    fn recurs_bfs(&self, s: &'a H, visited: &mut HashSet<&'a H>) {
+    fn recurs_dfs(&self, s: &'a H, visited: &mut HashSet<&'a H>) {
         if !visited.contains(s) {
             visited.insert(s);
             if let Some(node) = self.nodes.get(s) {
@@ -117,7 +117,7 @@ impl <'a, H, NodeData, EdgeData> Graph<'a, H, NodeData, EdgeData> where
                 print!("Adjacent outbound:");
                 node.outbound_edges.iter().for_each(|edge| print!(" {},", edge.0));
                 println!();
-                node.outbound_edges.iter().for_each(|edge| self.recurs_bfs(edge.0, visited));
+                node.outbound_edges.iter().for_each(|edge| self.recurs_dfs(edge.0, visited));
             }
         }
     }
@@ -139,20 +139,14 @@ impl <'a, H, NodeData, EdgeData> DftSerializer for Graph<'a, H, NodeData, EdgeDa
     EdgeData: Display + Clone {
     fn write_nodes(&self, file: &mut File) -> Result<(), GraphError> {
         for node in self.get_nodes() {
-            match writeln!(file, "{}", node.to_dft()) {
-                Ok(_) => { continue }
-                Err(e) => return Err(SerializerWriteError(e))
-            }
+            writeln!(file, "{}", node.to_dft())?
         }
         Ok(())
     }
 
     fn write_edges(&self, file: &mut File) -> Result<(), GraphError> {
         for edge in self.get_edges() {
-            match writeln!(file, "{}", edge.to_dft()) {
-                Ok(_) => { continue }
-                Err(e) => return Err(SerializerWriteError(e))
-            }
+            writeln!(file, "{}", edge.to_dft())?
         }
         Ok(())
     }
