@@ -15,7 +15,7 @@ pub struct Edge<H, EdgeData> where
     pub(crate) node_in: H,
 }
 
-impl <'a, H, EdgeData> Edge<H, EdgeData> where
+impl <H, EdgeData> Edge<H, EdgeData> where
     H: Hash + Eq + Display + FromStr + Clone,
     EdgeData: Display + Clone + FromStr {
 
@@ -35,7 +35,7 @@ impl <'a, H, EdgeData> Edge<H, EdgeData> where
     }
 }
 
-impl<'a, H, EdgeData> FromStr for Edge<H, EdgeData> where
+impl<H, EdgeData> FromStr for Edge<H, EdgeData> where
     H: Hash + Eq + Display + FromStr + Clone,
     EdgeData: Display + Clone + FromStr {
 
@@ -50,7 +50,7 @@ impl<'a, H, EdgeData> FromStr for Edge<H, EdgeData> where
     }
 }
 
-impl <'a, H, EdgeData> Display for Edge<H, EdgeData> where
+impl <H, EdgeData> Display for Edge<H, EdgeData> where
     H: Hash + Eq + Display + FromStr + Clone,
     EdgeData: Display + Clone + FromStr {
 
@@ -62,7 +62,7 @@ impl <'a, H, EdgeData> Display for Edge<H, EdgeData> where
     }
 }
 
-impl <'a, H, EdgeData> PartialEq for Edge<H, EdgeData> where
+impl <H, EdgeData> PartialEq for Edge<H, EdgeData> where
     H: Hash + Eq + Display + FromStr + Clone,
     EdgeData: Display + Clone + FromStr {
 
@@ -71,6 +71,6 @@ impl <'a, H, EdgeData> PartialEq for Edge<H, EdgeData> where
     }
 }
 
-impl <'a, H, EdgeData> Eq for Edge<H, EdgeData> where
+impl <H, EdgeData> Eq for Edge<H, EdgeData> where
     H: Hash + Eq + Display + FromStr + Clone,
     EdgeData: Display + Clone + FromStr {}

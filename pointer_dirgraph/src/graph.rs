@@ -67,11 +67,11 @@ impl <'a, H, NodeData, EdgeData> Graph<H, NodeData, EdgeData> where
     pub fn remove_edge(&mut self, outbound: &'a H, inbound: &'a H) -> Result<(), GraphError> {
         match self.nodes.get_mut(outbound) {
             Some(node) => {
-                match node.outbound_edges.remove(&outbound) {
+                match node.outbound_edges.remove(outbound) {
                     Some(_) => {
                         match self.nodes.get_mut(inbound) {
                             Some(in_node) => {
-                                match in_node.inbound_edges.remove(&inbound) {
+                                match in_node.inbound_edges.remove(inbound) {
                                     Some(_) => { Ok(()) }
                                     None => Err(NodeNotExist())
                                 }
@@ -135,7 +135,7 @@ impl <'a, H, NodeData, EdgeData> Graph<H, NodeData, EdgeData> where
     }
 }
 
-impl <'a, H, NodeData, EdgeData> DftSerializer for Graph<H, NodeData, EdgeData> where
+impl <H, NodeData, EdgeData> DftSerializer for Graph<H, NodeData, EdgeData> where
     H: Hash + Eq + Display + FromStr + Clone,
     NodeData: Display + Clone + FromStr,
     EdgeData: Display + Clone + FromStr {
@@ -154,7 +154,7 @@ impl <'a, H, NodeData, EdgeData> DftSerializer for Graph<H, NodeData, EdgeData> 
     }
 }
 
-impl <'a, H, NodeData, EdgeData> DftDeserializer for Graph<H, NodeData, EdgeData> where
+impl <H, NodeData, EdgeData> DftDeserializer for Graph<H, NodeData, EdgeData> where
     H: Hash + Eq + Display + FromStr + Clone,
     NodeData: Display + Clone + FromStr,
     EdgeData: Display + Clone + FromStr {

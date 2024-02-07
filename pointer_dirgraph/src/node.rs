@@ -20,7 +20,7 @@ pub struct NodeBuilder <H, NodeData, EdgeData> where
     inbound_edges: HashMap<H, Weak<RefCell<Edge<H, EdgeData>>>>,
 }
 
-impl<'a, H, NodeData, EdgeData> NodeBuilder<H, NodeData, EdgeData> where
+impl<H, NodeData, EdgeData> NodeBuilder<H, NodeData, EdgeData> where
     H: Hash + Eq + Display + FromStr + Clone,
     NodeData: Display + Clone + FromStr,
     EdgeData: Display + Clone + FromStr {
@@ -71,7 +71,7 @@ pub struct Node <H, NodeData, EdgeData> where
     pub(crate) inbound_edges: HashMap<H, Weak<RefCell<Edge<H, EdgeData>>>>,
 }
 
-impl<'a, H, NodeData, EdgeData> Display for Node<H, NodeData, EdgeData> where
+impl<H, NodeData, EdgeData> Display for Node<H, NodeData, EdgeData> where
     H: Hash + Eq + Display + FromStr + Clone,
     NodeData: Display + Clone + FromStr,
     EdgeData: Display + Clone + FromStr {
@@ -84,7 +84,7 @@ impl<'a, H, NodeData, EdgeData> Display for Node<H, NodeData, EdgeData> where
     }
 }
 
-impl<'a, H, NodeData, EdgeData> FromStr for Node<H, NodeData, EdgeData> where
+impl<H, NodeData, EdgeData> FromStr for Node<H, NodeData, EdgeData> where
     H: Hash + Eq + Display + FromStr + Clone,
     NodeData: Display + Clone + FromStr,
     EdgeData: Display + Clone + FromStr {
@@ -98,7 +98,7 @@ impl<'a, H, NodeData, EdgeData> FromStr for Node<H, NodeData, EdgeData> where
     }
 }
 
-impl<'a, H, NodeData, EdgeData> Node<H, NodeData, EdgeData> where
+impl<H, NodeData, EdgeData> Node<H, NodeData, EdgeData> where
     H: Hash + Eq + Display + FromStr + Clone,
     NodeData: Display + Clone + FromStr,
     EdgeData: Display + Clone + FromStr {
