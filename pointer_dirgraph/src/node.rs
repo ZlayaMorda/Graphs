@@ -80,3 +80,16 @@ impl<'a, H, NodeData, EdgeData> Display for Node<'a, H, NodeData, EdgeData> wher
         }
     }
 }
+
+impl<'a, H, NodeData, EdgeData> Node<'a, H, NodeData, EdgeData> where
+    H: Hash + Eq + Display,
+    NodeData: Display + Clone,
+    EdgeData: Display + Clone {
+
+    pub fn to_dft(&self) -> String {
+        match &self.data {
+            Some(data) => { format!("{} {}", self.index, data) }
+            None => { format!("{} None", self.index) }
+        }
+    }
+}

@@ -23,6 +23,13 @@ impl <'a, H, EdgeData> Edge<'a, H, EdgeData> where
             node_in,
         }
     }
+
+    pub fn to_dft(&self) -> String {
+        match &self.data {
+            Some(data) => { format!("{} {} {}", self.node_out, self.node_in, data) }
+            None => { format!("{} {} None", self.node_out, self.node_in) }
+        }
+    }
 }
 
 impl <'a, H, EdgeData> Display for Edge<'a, H, EdgeData> where
