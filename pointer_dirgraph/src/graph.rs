@@ -1,12 +1,15 @@
-use std::cell::RefCell;
+use std::cell::{Ref, RefCell};
 use std::collections::{HashMap, HashSet};
 use std::fmt::Display;
+use std::io::Write;
+use std::fs::File;
 use std::hash::Hash;
 use std::rc::{Rc, Weak};
+use crate::dft::serializer::DftSerializer;
 use crate::edge::Edge;
 use crate::errors::GraphError;
-use crate::errors::GraphError::{EdgeExist, EdgeNotExist, NodeNotExist, NotEqualIndexes, OccupiedError};
-use crate::node::Node;
+use crate::errors::GraphError::{EdgeExist, EdgeNotExist, NodeNotExist, NotEqualIndexes, OccupiedError, SerializerWriteError};
+use crate::node::{Node};
 
 #[derive(Default, Debug)]
 pub struct Graph<'a, H, NodeData, EdgeData> where
@@ -116,5 +119,40 @@ impl <'a, H, NodeData, EdgeData> Graph<'a, H, NodeData, EdgeData> where
                 node.outbound_edges.iter().for_each(|edge| self.recurs_bfs(edge.0, visited));
             }
         }
+    }
+    pub fn get_nodes(&self) -> Vec<&Node<'a, H, NodeData, EdgeData>> {
+        self.nodes.values().collect()
+    }
+    pub fn get_edges(&self) -> Vec<Ref<Edge<'a, H, EdgeData>>> {
+        self.nodes.values().flat_map(
+            |node| node.outbound_edges.values().map(
+                |edge| edge.borrow()
+            ).collect::<Vec<Ref<Edge<H, EdgeData>>>>()
+        ).collect::<Vec<Ref<Edge<H, EdgeData>>>>()
+    }
+}
+
+impl <'a, H, NodeData, EdgeData> DftSerializer for Graph<'a, H, NodeData, EdgeData> where
+    H: Hash + Eq + Display,
+    NodeData: Display + Clone,
+    EdgeData: Display + Clone {
+    fn write_nodes(&self, file: &mut File) -> Result<(), GraphError> {
+        for node in self.get_nodes() {
+            match writeln!(file, "{}", node.to_dft()) {
+                Ok(_) => { continue }
+                Err(e) => return Err(SerializerWriteError(e))
+            }
+        }
+        Ok(())
+    }
+
+    fn write_edges(&self, file: &mut File) -> Result<(), GraphError> {
+        for edge in self.get_edges() {
+            match writeln!(file, "{}", edge.to_dft()) {
+                Ok(_) => { continue }
+                Err(e) => return Err(SerializerWriteError(e))
+            }
+        }
+        Ok(())
     }
 }
