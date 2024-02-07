@@ -5,6 +5,8 @@ use std::io::Write;
 use std::fs::File;
 use std::hash::Hash;
 use std::rc::{Rc, Weak};
+use std::str::FromStr;
+use crate::dft::deserializer::DftDeserializer;
 use crate::dft::serializer::DftSerializer;
 use crate::edge::Edge;
 use crate::errors::GraphError;
@@ -12,23 +14,23 @@ use crate::errors::GraphError::{EdgeExist, EdgeNotExist, NodeNotExist, NotEqualI
 use crate::node::{Node};
 
 #[derive(Default, Debug)]
-pub struct Graph<'a, H, NodeData, EdgeData> where
-    H: Hash + Eq + Display,
-    NodeData: Display + Clone,
-    EdgeData: Display + Clone
+pub struct Graph<H, NodeData, EdgeData> where
+    H: Hash + Eq + Display + FromStr + Clone,
+    NodeData: Display + Clone + FromStr,
+    EdgeData: Display + Clone + FromStr
 {
-    nodes: HashMap<H, Node<'a, H, NodeData, EdgeData>>
+    nodes: HashMap<H, Node<H, NodeData, EdgeData>>
 }
 
-impl <'a, H, NodeData, EdgeData> Graph<'a, H, NodeData, EdgeData> where
-    H: Hash + Eq + Display,
-    NodeData: Display + Clone,
-    EdgeData: Display + Clone {
+impl <'a, H, NodeData, EdgeData> Graph<H, NodeData, EdgeData> where
+    H: Hash + Eq + Display + FromStr + Clone,
+    NodeData: Display + Clone + FromStr,
+    EdgeData: Display + Clone + FromStr {
 
-    pub fn add_node(&mut self, index: H, node: Node<'a, H, NodeData, EdgeData>) -> Result<(), GraphError> {
+    pub fn add_node(&mut self, index: H, node: Node<H, NodeData, EdgeData>) -> Result<(), GraphError> {
         if self.nodes.get(&index).is_some() {
             Err(OccupiedError())
-        } else if index.eq(node.index){
+        } else if index.eq(&node.index){
             match self.nodes.insert(index, node) {
                 None => Ok(()),
                 _ => panic!("Changed value, while exists key")
@@ -38,22 +40,22 @@ impl <'a, H, NodeData, EdgeData> Graph<'a, H, NodeData, EdgeData> where
         }
     }
 
-    pub fn get_node(&self, key: H) -> Option<&Node<'a, H, NodeData, EdgeData>> {
+    pub fn get_node(&self, key: H) -> Option<&Node<H, NodeData, EdgeData>> {
         self.nodes.get(&key)
     }
 
-    pub fn add_edge(&mut self, new_edge: Edge<'a, H, EdgeData>) -> Result<(), GraphError> {
-        match self.contain_nodes_and_not_edge(new_edge.node_out, new_edge.node_in) {
+    pub fn add_edge(&mut self, new_edge: Edge<H, EdgeData>) -> Result<(), GraphError> {
+        match self.contain_nodes_and_not_edge(&new_edge.node_out, &new_edge.node_in) {
             Ok(_) => {
-                let outbound: &H = new_edge.node_out;
-                let inbound: &H = new_edge.node_in;
+                let outbound: H = new_edge.node_out.clone();
+                let inbound: H = new_edge.node_in.clone();
                 let new_edge : Rc<RefCell<Edge<H, EdgeData>>> = Rc::new(RefCell::new(new_edge));
                 let weak_edge : Weak<RefCell<Edge<H, EdgeData>>> = Rc::downgrade(&new_edge);
-                let outbound_node: &mut Node<H, NodeData, EdgeData> = self.nodes.get_mut(outbound)
+                let outbound_node: &mut Node<H, NodeData, EdgeData> = self.nodes.get_mut(&outbound)
                     .expect("node does not exist"); // checked if node exists
-                outbound_node.outbound_edges.insert(inbound, new_edge);
+                outbound_node.outbound_edges.insert(inbound.clone(), new_edge);
 
-                let inbound_node: &mut Node<H, NodeData, EdgeData> = self.nodes.get_mut(inbound)
+                let inbound_node: &mut Node<H, NodeData, EdgeData> = self.nodes.get_mut(&inbound)
                     .expect("node does not exist");
                 inbound_node.inbound_edges.insert(outbound, weak_edge);
                 Ok(())
@@ -101,12 +103,12 @@ impl <'a, H, NodeData, EdgeData> Graph<'a, H, NodeData, EdgeData> where
         }
     }
 
-    pub fn dfs(&self, s: &'a H) {
+    pub fn dfs(&self, s: &H) {
         let mut visited: HashSet<&H> = HashSet::new();
         self.recurs_dfs(s, &mut visited);
     }
 
-    fn recurs_dfs(&self, s: &'a H, visited: &mut HashSet<&'a H>) {
+    fn recurs_dfs(&'a self, s: &'a H, visited: &mut HashSet<&'a H>) {
         if !visited.contains(s) {
             visited.insert(s);
             if let Some(node) = self.nodes.get(s) {
@@ -121,10 +123,10 @@ impl <'a, H, NodeData, EdgeData> Graph<'a, H, NodeData, EdgeData> where
             }
         }
     }
-    pub fn get_nodes(&self) -> Vec<&Node<'a, H, NodeData, EdgeData>> {
+    pub fn get_nodes(&self) -> Vec<&Node<H, NodeData, EdgeData>> {
         self.nodes.values().collect()
     }
-    pub fn get_edges(&self) -> Vec<Ref<Edge<'a, H, EdgeData>>> {
+    pub fn get_edges(&self) -> Vec<Ref<Edge<H, EdgeData>>> {
         self.nodes.values().flat_map(
             |node| node.outbound_edges.values().map(
                 |edge| edge.borrow()
@@ -133,10 +135,10 @@ impl <'a, H, NodeData, EdgeData> Graph<'a, H, NodeData, EdgeData> where
     }
 }
 
-impl <'a, H, NodeData, EdgeData> DftSerializer for Graph<'a, H, NodeData, EdgeData> where
-    H: Hash + Eq + Display,
-    NodeData: Display + Clone,
-    EdgeData: Display + Clone {
+impl <'a, H, NodeData, EdgeData> DftSerializer for Graph<H, NodeData, EdgeData> where
+    H: Hash + Eq + Display + FromStr + Clone,
+    NodeData: Display + Clone + FromStr,
+    EdgeData: Display + Clone + FromStr {
     fn write_nodes(&self, file: &mut File) -> Result<(), GraphError> {
         for node in self.get_nodes() {
             writeln!(file, "{}", node.to_dft())?
@@ -149,5 +151,21 @@ impl <'a, H, NodeData, EdgeData> DftSerializer for Graph<'a, H, NodeData, EdgeDa
             writeln!(file, "{}", edge.to_dft())?
         }
         Ok(())
+    }
+}
+
+impl <'a, H, NodeData, EdgeData> DftDeserializer for Graph<H, NodeData, EdgeData> where
+    H: Hash + Eq + Display + FromStr + Clone,
+    NodeData: Display + Clone + FromStr,
+    EdgeData: Display + Clone + FromStr {
+
+    fn deserialize_nodes(&mut self, line: &str) -> Result<(), GraphError> {
+        let node = line.parse::<Node<H, NodeData, EdgeData>>()?;
+        self.add_node(node.index.clone(), node)
+    }
+
+    fn deserialize_edges(&mut self, line: &str) -> Result<(), GraphError> {
+        let edge = line.parse::<Edge<H, EdgeData>>()?;
+        self.add_edge(edge)
     }
 }

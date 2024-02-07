@@ -4,25 +4,28 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::hash::Hash;
 use std::rc::{Rc, Weak};
+use std::str::FromStr;
 use crate::edge::Edge;
+use crate::errors::GraphError;
+use crate::errors::GraphError::ParseStrError;
 
-pub struct NodeBuilder <'a, H, NodeData, EdgeData> where
-    H: Hash + Eq + Display,
-    NodeData: Display + Clone,
-    EdgeData: Display + Clone
+pub struct NodeBuilder <H, NodeData, EdgeData> where
+    H: Hash + Eq + Display + FromStr + Clone,
+    NodeData: Display + Clone + FromStr,
+    EdgeData: Display + Clone + FromStr
 {
-    index: &'a H,
+    index: H,
     data: Option<NodeData>,
-    outbound_edges: HashMap<&'a H, Rc<RefCell<Edge<'a, H, EdgeData>>>>,
-    inbound_edges: HashMap<&'a H, Weak<RefCell<Edge<'a, H, EdgeData>>>>,
+    outbound_edges: HashMap<H, Rc<RefCell<Edge<H, EdgeData>>>>,
+    inbound_edges: HashMap<H, Weak<RefCell<Edge<H, EdgeData>>>>,
 }
 
-impl<'a, H, NodeData, EdgeData> NodeBuilder<'a, H, NodeData, EdgeData> where
-    H: Hash + Eq + Display,
-    NodeData: Display + Clone,
-    EdgeData: Display + Clone {
+impl<'a, H, NodeData, EdgeData> NodeBuilder<H, NodeData, EdgeData> where
+    H: Hash + Eq + Display + FromStr + Clone,
+    NodeData: Display + Clone + FromStr,
+    EdgeData: Display + Clone + FromStr {
 
-    pub fn new(index: &'a H) -> NodeBuilder<'a, H, NodeData, EdgeData> {
+    pub fn new(index: H) -> NodeBuilder<H, NodeData, EdgeData> {
         NodeBuilder {
             index,
             data: None,
@@ -31,22 +34,22 @@ impl<'a, H, NodeData, EdgeData> NodeBuilder<'a, H, NodeData, EdgeData> where
         }
     }
 
-    pub fn data(mut self, data: NodeData) -> NodeBuilder<'a, H, NodeData, EdgeData> {
+    pub fn data(mut self, data: NodeData) -> NodeBuilder<H, NodeData, EdgeData> {
         self.data = Some(data);
         self
     }
 
-    pub fn outbound_edges(mut self, outbound_edges: HashMap<&'a H, Rc<RefCell<Edge<'a, H, EdgeData>>>>) -> NodeBuilder<H, NodeData, EdgeData> {
+    pub fn outbound_edges(mut self, outbound_edges: HashMap<H, Rc<RefCell<Edge<H, EdgeData>>>>) -> NodeBuilder<H, NodeData, EdgeData> {
         self.outbound_edges = outbound_edges;
         self
     }
 
-    pub fn inbound_edges(mut self, inbound_edges: HashMap<&'a H, Weak<RefCell<Edge<'a, H, EdgeData>>>>) -> NodeBuilder<H, NodeData, EdgeData> {
+    pub fn inbound_edges(mut self, inbound_edges: HashMap<H, Weak<RefCell<Edge<H, EdgeData>>>>) -> NodeBuilder<H, NodeData, EdgeData> {
         self.inbound_edges = inbound_edges;
         self
     }
 
-    pub fn build(self) -> Node<'a, H, NodeData, EdgeData> {
+    pub fn build(self) -> Node<H, NodeData, EdgeData> {
         Node {
             index: self.index,
             data: self.data,
@@ -57,21 +60,21 @@ impl<'a, H, NodeData, EdgeData> NodeBuilder<'a, H, NodeData, EdgeData> where
 }
 
 #[derive(Debug)]
-pub struct Node <'a, H, NodeData, EdgeData> where
-    H: Hash + Eq + Display,
-    NodeData: Display + Clone,
-    EdgeData: Display + Clone
+pub struct Node <H, NodeData, EdgeData> where
+    H: Hash + Eq + Display + FromStr + Clone,
+    NodeData: Display + Clone + FromStr,
+    EdgeData: Display + Clone + FromStr
 {
-    pub(crate) index: &'a H,
+    pub(crate) index: H,
     pub(crate) data: Option<NodeData>,
-    pub(crate) outbound_edges: HashMap<&'a H, Rc<RefCell<Edge<'a, H, EdgeData>>>>,
-    pub(crate) inbound_edges: HashMap<&'a H, Weak<RefCell<Edge<'a, H, EdgeData>>>>,
+    pub(crate) outbound_edges: HashMap<H, Rc<RefCell<Edge<H, EdgeData>>>>,
+    pub(crate) inbound_edges: HashMap<H, Weak<RefCell<Edge<H, EdgeData>>>>,
 }
 
-impl<'a, H, NodeData, EdgeData> Display for Node<'a, H, NodeData, EdgeData> where
-    H: Hash + Eq + Display,
-    NodeData: Display + Clone,
-    EdgeData: Display + Clone {
+impl<'a, H, NodeData, EdgeData> Display for Node<H, NodeData, EdgeData> where
+    H: Hash + Eq + Display + FromStr + Clone,
+    NodeData: Display + Clone + FromStr,
+    EdgeData: Display + Clone + FromStr {
 
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match &self.data {
@@ -81,10 +84,24 @@ impl<'a, H, NodeData, EdgeData> Display for Node<'a, H, NodeData, EdgeData> wher
     }
 }
 
-impl<'a, H, NodeData, EdgeData> Node<'a, H, NodeData, EdgeData> where
-    H: Hash + Eq + Display,
-    NodeData: Display + Clone,
-    EdgeData: Display + Clone {
+impl<'a, H, NodeData, EdgeData> FromStr for Node<H, NodeData, EdgeData> where
+    H: Hash + Eq + Display + FromStr + Clone,
+    NodeData: Display + Clone + FromStr,
+    EdgeData: Display + Clone + FromStr {
+
+    type Err = GraphError;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (index_str, data_str) = s.split_once(char::is_whitespace).ok_or(ParseStrError())?;
+        let index = index_str.parse::<H>().map_err(|_| ParseStrError())?;
+        let data = data_str.parse::<NodeData>().map_err(|_| ParseStrError())?;
+        Ok(NodeBuilder::new(index).data(data).build())
+    }
+}
+
+impl<'a, H, NodeData, EdgeData> Node<H, NodeData, EdgeData> where
+    H: Hash + Eq + Display + FromStr + Clone,
+    NodeData: Display + Clone + FromStr,
+    EdgeData: Display + Clone + FromStr {
 
     pub fn to_dft(&self) -> String {
         match &self.data {

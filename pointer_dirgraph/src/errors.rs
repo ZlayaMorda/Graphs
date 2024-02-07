@@ -13,5 +13,7 @@ pub enum GraphError {
     #[error("Not equal indexes")]
     NotEqualIndexes(),
     #[error("Serialization error: {0}")]
-    DftError(#[from] std::io::Error)
+    DftError(#[from] std::io::Error),
+    #[error("Error while parsing from str")]
+    ParseStrError()
 }
