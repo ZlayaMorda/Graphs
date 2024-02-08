@@ -9,6 +9,7 @@ use crate::dir_graph::edge::Edge;
 use crate::errors::GraphError;
 use crate::errors::GraphError::ParseStrError;
 
+/// NodeBuilder provides more flexible creation of Node with different input data
 pub struct NodeBuilder <H, NodeData, EdgeData> where
     H: Hash + Eq + Display + FromStr + Clone,
     NodeData: Display + Clone + FromStr,
@@ -84,6 +85,7 @@ impl<H, NodeData, EdgeData> Display for Node<H, NodeData, EdgeData> where
     }
 }
 
+/// Realized to deserialize from dft format
 impl<H, NodeData, EdgeData> FromStr for Node<H, NodeData, EdgeData> where
     H: Hash + Eq + Display + FromStr + Clone,
     NodeData: Display + Clone + FromStr,
@@ -103,6 +105,23 @@ impl<H, NodeData, EdgeData> Node<H, NodeData, EdgeData> where
     NodeData: Display + Clone + FromStr,
     EdgeData: Display + Clone + FromStr {
 
+    pub fn get_index(&self) -> &H {
+        &self.index
+    }
+
+    pub fn get_data(&self) -> &Option<NodeData> {
+        &self.data
+    }
+
+    pub fn get_outbound(&self) -> &HashMap<H, Rc<RefCell<Edge<H, EdgeData>>>> {
+        &self.outbound_edges
+    }
+
+    pub fn get_inbound(&self) -> &HashMap<H, Weak<RefCell<Edge<H, EdgeData>>>> {
+        &self.inbound_edges
+    }
+
+    /// Parse Node to dft String format
     pub fn to_dft(&self) -> String {
         match &self.data {
             Some(data) => { format!("{} {}", self.index, data) }

@@ -7,6 +7,8 @@ enum Mode {
     Edges
 }
 
+/// Graph may implement DftDeserializer for the dft serialization
+/// Must realize write_nodes and write_edges functions
 pub trait DftDeserializer {
 
     fn deserialize(&mut self, path: &str) -> Result<(), GraphError> {
@@ -26,7 +28,9 @@ pub trait DftDeserializer {
         Ok(())
     }
 
+    /// Read all nodes from the file in the dft format, parse and add to the graph
     fn deserialize_nodes(&mut self, line: &str) -> Result<(), GraphError>;
 
+    /// Read all edges from the file in the dft format, parse and add to the graph
     fn deserialize_edges(&mut self, line: &str) -> Result<(), GraphError>;
 }

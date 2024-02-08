@@ -27,6 +27,19 @@ impl <H, EdgeData> Edge<H, EdgeData> where
         }
     }
 
+    pub fn get_data(&self) -> &Option<EdgeData> {
+        &self.data
+    }
+
+    pub fn get_node_out(&self) -> &H {
+        &self.node_out
+    }
+
+    pub fn get_node_in(&self) -> &H {
+        &self.node_in
+    }
+
+    /// Parse Edge to dft String format
     pub fn to_dft(&self) -> String {
         match &self.data {
             Some(data) => { format!("{} {} {}", self.node_out, self.node_in, data) }
@@ -35,6 +48,7 @@ impl <H, EdgeData> Edge<H, EdgeData> where
     }
 }
 
+/// Realized to deserialize from dft format
 impl<H, EdgeData> FromStr for Edge<H, EdgeData> where
     H: Hash + Eq + Display + FromStr + Clone,
     EdgeData: Display + Clone + FromStr {
