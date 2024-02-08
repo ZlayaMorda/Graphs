@@ -40,8 +40,28 @@ impl <'a, H, NodeData, EdgeData> Graph<H, NodeData, EdgeData> where
         }
     }
 
-    pub fn get_node(&self, key: H) -> Option<&Node<H, NodeData, EdgeData>> {
-        self.nodes.get(&key)
+    pub fn remove_node(&mut self, index: &H) -> Result<(), GraphError> {
+        let node = self.nodes.get(index).ok_or(NodeNotExist())?;
+        let outbound_nodes = node.outbound_edges.to_owned();
+        let inbound_nodes = node.inbound_edges.to_owned();
+
+        for outbound in outbound_nodes.iter() {
+            if let Some(node) = self.nodes.get_mut(outbound.0) {
+                node.inbound_edges.remove(index);
+            }
+        }
+        for inbound in inbound_nodes.iter() {
+            if let Some(node) = self.nodes.get_mut(inbound.0) {
+                node.outbound_edges.remove(index);
+            }
+        }
+        if self.nodes.remove(index).is_none() {
+            Err(NodeNotExist())
+        } else { Ok(()) }
+    }
+
+    pub fn get_node(&self, key: &H) -> Option<&Node<H, NodeData, EdgeData>> {
+        self.nodes.get(key)
     }
 
     pub fn add_edge(&mut self, new_edge: Edge<H, EdgeData>) -> Result<(), GraphError> {
