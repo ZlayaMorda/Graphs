@@ -5,7 +5,7 @@ use std::fmt::{Display, Formatter};
 use std::hash::Hash;
 use std::rc::{Rc, Weak};
 use std::str::FromStr;
-use crate::edge::Edge;
+use crate::dir_graph::edge::Edge;
 use crate::errors::GraphError;
 use crate::errors::GraphError::ParseStrError;
 

@@ -8,10 +8,10 @@ use std::rc::{Rc, Weak};
 use std::str::FromStr;
 use crate::dft::deserializer::DftDeserializer;
 use crate::dft::serializer::DftSerializer;
-use crate::edge::Edge;
+use crate::dir_graph::edge::Edge;
 use crate::errors::GraphError;
 use crate::errors::GraphError::{EdgeExist, EdgeNotExist, NodeNotExist, NotEqualIndexes, OccupiedError};
-use crate::node::{Node};
+use crate::dir_graph::node::{Node};
 
 #[derive(Default, Debug)]
 pub struct Graph<H, NodeData, EdgeData> where

@@ -1,5 +1,5 @@
-use pointer_dirgraph::dft::deserializer::DftDeserializer;
-use pointer_dirgraph::graph::Graph;
+use graph_lib::dft::deserializer::DftDeserializer;
+use graph_lib::dir_graph::graph::Graph;
 
 fn main() {
     let mut deserialized_graph: Graph<u32, u32, String> = Graph::default();

@@ -3,7 +3,7 @@
 version = 3
 
 [[package]]
-name = "pointer_dirgraph"
+name = "graph_lib"
 version = "0.1.0"
 dependencies = [
  "thiserror",
@@ -68,5 +68,5 @@ checksum = "3354b9ac3fae1ff6755cb6db53683adb661634f67557942dea4facebec0fee4b"
 name = "usage"
 version = "0.1.0"
 dependencies = [
- "pointer_dirgraph",
+ "graph_lib",
 ]
