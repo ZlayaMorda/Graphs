@@ -13,6 +13,29 @@ use crate::errors::GraphError;
 use crate::errors::GraphError::{EdgeExist, EdgeNotExist, NodeNotExist, NotEqualIndexes, OccupiedError};
 use crate::dir_graph::node::{Node};
 
+/// Directed graph, nodes collected in HashMap
+///
+/// # Examples
+///```
+/// use graph_lib::dir_graph::graph::Graph;
+/// use graph_lib::dir_graph::node::{Node, NodeBuilder};
+/// use graph_lib::dir_graph::edge::Edge;
+///
+/// let mut graph: Graph<u32, u32, u32> = Graph::default();
+/// graph.add_node(1, NodeBuilder::new(1).data(1).build()).expect("Error while add node");
+/// graph.add_node(2, NodeBuilder::new(2).data(2).build()).expect("Error while add node");
+/// graph.add_edge(Edge::new(1, 1_u32, 2_u32)).expect("Error while add edge");
+///
+/// assert_eq!(graph.get_node(&1).expect("Error while get node").get_index(), &1);
+///
+/// let edge = graph.get_node(&1).expect("Error while get node").get_outbound()
+/// .get(&2).expect("Error while get edge");
+/// assert_eq!(edge.borrow().get_node_out(), &1);
+///
+/// graph.remove_node(&1).expect("Error remove node");
+/// assert!(graph.get_node(&1).is_none());
+/// assert!(graph.get_node(&2).expect("Error get node").get_inbound().get(&1).is_none())
+/// ```
 #[derive(Default, Debug)]
 pub struct Graph<H, NodeData, EdgeData> where
     H: Hash + Eq + Display + FromStr + Clone,
