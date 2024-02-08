@@ -1,0 +1,10 @@
+1 1
+2 2
+3 3
+4 4
+#
+1 1 from one to one
+1 2 from one to two
+1 4 from one to four
+2 3 from two to three
+2 4 from two to four
